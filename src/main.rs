@@ -2,6 +2,7 @@ use std::io;
 use std::process::exit;
 use std::fs::File;
 use std::io::Write;
+use std::path::Path;
 
 
 fn main() {
@@ -42,17 +43,23 @@ fn remove_note() {
 }
 
 fn get_all_notes() {
+// TODO this function will use sqlite
     println!("get_all_notes fn");
 }
 
 fn find_note() {
     println!("Find note function.");
+    println!("Enter note name for check exists: ");
+    let mut note_name = String::new();
+    io::stdin().read_line(&mut note_name).expect("Failed to read line.");
+    let string = format!("Note with name - {} - has status: {}", &note_name, Path::new(&note_name).exists());
+    println!("{}", string);
 }
 
 fn create_new_note() {
     println!("Enter note name: ");
     let mut note_name = String::new();
-    io::stdin().read_line(&mut note_name).expect("Failed to read line");
+    io::stdin().read_line(&mut note_name).expect("Failed to read line.");
     let mut file = File::create(note_name).expect("Failed to create file.");
     println!("Enter what you want write to note: ");
     let mut note_string = String::new();
@@ -61,10 +68,11 @@ fn create_new_note() {
 }
 
 fn main_menu() {
-    println!("Now input number what to do next: ");
+    println!("What's next: ");
     println!("[1] Create new note");
     println!("[2] Find note");
     println!("[3] Get all notes");
     println!("[4] Remove note");
     println!("[5] Exit");
+    // TODO Update note need too
 }
