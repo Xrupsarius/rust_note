@@ -1,0 +1,9 @@
+[package]
+authors = ["Xrupsarius"]
+name = "noterustapp"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+time = "0.3.37"
+regex = "1.11.1"
