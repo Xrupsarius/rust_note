@@ -1,5 +1,7 @@
 use std::io;
 use std::process::exit;
+use std::fs::File;
+use std::io::Write;
 
 
 fn main() {
@@ -48,7 +50,14 @@ fn find_note() {
 }
 
 fn create_new_note() {
-    println!("Create new note function.");
+    println!("Enter note name: ");
+    let mut note_name = String::new();
+    io::stdin().read_line(&mut note_name).expect("Failed to read line");
+    let mut file = File::create(note_name).expect("Failed to create file.");
+    println!("Enter what you want write to note: ");
+    let mut note_string = String::new();
+    io::stdin().read_line(&mut note_string).expect("Falied to enter string line.");
+    file.write_all(note_string.as_ref()).expect("Error while write to file.");
 }
 
 fn main_menu() {
