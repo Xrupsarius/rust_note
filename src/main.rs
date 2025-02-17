@@ -4,20 +4,20 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 
+static FAILED_TO_READ_LINE: &'static str = "Failed to read line.";
 
 fn main() {
     println!("This is note example app.");
     println!("Input your name: ");
     let mut input = String::new();
-    // io::stdin().read_line(&mut input)?;
-    io::stdin().read_line(&mut input).expect("Failed to read line.");
+    io::stdin().read_line(&mut input).expect(FAILED_TO_READ_LINE);
     println!("Hello, {}", input);
 
     loop {
         main_menu();
         println!("Enter number: ");
         let mut menu_number = String::new();
-        io::stdin().read_line(&mut menu_number).expect("Failed to read line.");
+        io::stdin().read_line(&mut menu_number).expect(FAILED_TO_READ_LINE);
         let menu_num: i8 = menu_number.trim().parse().expect("This is not a number");
         select_menu_num(menu_num);
     }
@@ -45,7 +45,7 @@ fn update_note() {
 fn remove_note() {
     println!("Enter file name:");
     let mut file_name = String::new();
-    io::stdin().read_line(&mut file_name).expect("Failed to read line");
+    io::stdin().read_line(&mut file_name).expect(FAILED_TO_READ_LINE);
     if find_note(file_name.clone()) {
         fs::remove_file(&file_name).expect("Failed to delete file");
         println!("{file_name} successfully deleted.");
@@ -66,7 +66,7 @@ fn find_note(note_name: String) -> bool {
 fn create_new_note() {
     println!("Enter note name: ");
     let mut note_name = String::new();
-    io::stdin().read_line(&mut note_name).expect("Failed to read line.");
+    io::stdin().read_line(&mut note_name).expect(FAILED_TO_READ_LINE);
     if find_note(note_name.clone()) {
         println!("Note is exist. Just update it.");
     } else {
