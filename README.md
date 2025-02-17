@@ -7,3 +7,4 @@ Tasks:
 4) Add sqlite in future for notes
 5) Remove all notes
 6) Choose any notes by menu (if exists) and update it
+7) GUI for all of this
