@@ -1,8 +1,8 @@
 use std::{fs, io};
-use std::process::exit;
-use std::fs::File;
-use std::io::Write;
+use std::fs::{File, OpenOptions};
+use std::io::{Write};
 use std::path::Path;
+use std::process::exit;
 
 static FAILED_TO_READ_LINE: &'static str = "Failed to read line.";
 
@@ -40,6 +40,23 @@ fn select_menu_num(menu_num: i8) {
 
 fn update_note() {
     println!("update_note fn");
+    println!("Enter note name: ");
+    let mut note_name = String::new();
+    io::stdin().read_line(&mut note_name).expect(FAILED_TO_READ_LINE);
+    if find_note(note_name.clone()) {
+        println!("Enter what you want: ");
+        let mut new_lines = String::new();
+        io::stdin().read_line(&mut new_lines).expect(FAILED_TO_READ_LINE);
+        let mut file = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(note_name)
+            .unwrap();
+        file.write_all(new_lines.as_bytes()).unwrap();
+        println!("Write new lines successfully.");
+    } else {
+        println!("Note is not find. Is it exists?");
+    }
 }
 
 fn remove_note() {
