@@ -1,7 +1,7 @@
 ### Note project by rust
 
 Tasks:
-1) Update note function
+1) Update note function | +/-
 2) Get all note function
 3) Update note when file exist by create note function
 4) Add sqlite in future for notes

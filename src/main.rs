@@ -23,6 +23,19 @@ fn main() {
     }
 }
 
+fn read_input() -> String {
+    let mut text = String::new();
+    io::stdout().flush().expect("Failed flush buffer");
+    match io::stdin().read_line(&mut text) {
+        Ok(_) => (),
+        Err(error) => panic!("${FAILED_TO_READ_LINE} + {}", error),
+    }
+    if text.ends_with("\n") {
+        text.pop();
+    }
+    text
+}
+
 fn select_menu_num(menu_num: i8) {
     if menu_num == 1 {
         create_new_note();
@@ -39,14 +52,12 @@ fn select_menu_num(menu_num: i8) {
 }
 
 fn update_note() {
-    println!("update_note fn");
     println!("Enter note name: ");
     let mut note_name = String::new();
-    io::stdin().read_line(&mut note_name).expect(FAILED_TO_READ_LINE);
+    note_name = read_input();
     if find_note(note_name.clone()) {
         println!("Enter what you want: ");
-        let mut new_lines = String::new();
-        io::stdin().read_line(&mut new_lines).expect(FAILED_TO_READ_LINE);
+        let mut new_lines = read_input();
         let mut file = OpenOptions::new()
             .write(true)
             .append(true)
@@ -61,8 +72,7 @@ fn update_note() {
 
 fn remove_note() {
     println!("Enter file name:");
-    let mut file_name = String::new();
-    io::stdin().read_line(&mut file_name).expect(FAILED_TO_READ_LINE);
+    let mut file_name = read_input();
     if find_note(file_name.clone()) {
         fs::remove_file(&file_name).expect("Failed to delete file");
         println!("{file_name} successfully deleted.");
@@ -82,15 +92,13 @@ fn find_note(note_name: String) -> bool {
 
 fn create_new_note() {
     println!("Enter note name: ");
-    let mut note_name = String::new();
-    io::stdin().read_line(&mut note_name).expect(FAILED_TO_READ_LINE);
+    let mut note_name = read_input();
     if find_note(note_name.clone()) {
         println!("Note is exist. Just update it.");
     } else {
         let mut file = File::create(&note_name).expect("Failed to create file.");
         println!("Enter what you want write to note: ");
-        let mut note_string = String::new();
-        io::stdin().read_line(&mut note_string).expect("Failed to enter string line.");
+        let mut note_string = read_input();
         file.write_all(note_string.as_ref()).expect("Error while write to file.");
     }
 }
