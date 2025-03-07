@@ -1,3 +1,6 @@
+mod conn_configuration;
+
+use conn_configuration as sql;
 use std::{env, fs, io};
 use std::fs::{File, OpenOptions};
 use std::io::{Write};
@@ -9,15 +12,14 @@ static FAILED_TO_READ_LINE: &'static str = "Failed to read line.";
 fn main() {
     println!("This is note example app.");
     println!("Input your name: ");
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).expect(FAILED_TO_READ_LINE);
-    println!("Hello, {}", input);
+    let input = read_input();
+    sql::sqlite_utils::create_database(input.clone());
+    println!("Hello, {input}");
 
     loop {
         main_menu();
         println!("Enter number: ");
-        let mut menu_number = String::new();
-        io::stdin().read_line(&mut menu_number).expect(FAILED_TO_READ_LINE);
+        let mut menu_number = read_input();
         let menu_num: i8 = menu_number.trim().parse().expect("This is not a number");
         select_menu_num(menu_num);
     }

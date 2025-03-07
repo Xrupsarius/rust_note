@@ -7,3 +7,4 @@ edition = "2021"
 [dependencies]
 time = "0.3.37"
 regex = "1.11.1"
+sqlite = "0.36.2"
