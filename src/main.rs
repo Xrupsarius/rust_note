@@ -1,4 +1,4 @@
-use std::{fs, io};
+use std::{env, fs, io};
 use std::fs::{File, OpenOptions};
 use std::io::{Write};
 use std::path::Path;
@@ -42,7 +42,7 @@ fn select_menu_num(menu_num: i8) {
     } else if menu_num == 2 {
         update_note();
     } else if menu_num == 3 {
-        get_all_notes();
+        get_all_notes().unwrap();
     } else if menu_num == 4 {
         remove_note();
     } else if menu_num == 5 {
@@ -53,11 +53,10 @@ fn select_menu_num(menu_num: i8) {
 
 fn update_note() {
     println!("Enter note name: ");
-    let mut note_name = String::new();
-    note_name = read_input();
+    let note_name = read_input();
     if find_note(note_name.clone()) {
         println!("Enter what you want: ");
-        let mut new_lines = read_input();
+        let new_lines = read_input();
         let mut file = OpenOptions::new()
             .write(true)
             .append(true)
@@ -72,7 +71,7 @@ fn update_note() {
 
 fn remove_note() {
     println!("Enter file name:");
-    let mut file_name = read_input();
+    let file_name = read_input();
     if find_note(file_name.clone()) {
         fs::remove_file(&file_name).expect("Failed to delete file");
         println!("{file_name} successfully deleted.");
@@ -81,9 +80,21 @@ fn remove_note() {
     }
 }
 
-fn get_all_notes() {
-// TODO this function will use sqlite
-    println!("get_all_notes fn");
+fn get_all_notes() -> std::io::Result<()> {
+    let current_dir = env::current_dir()?;
+    match fs::read_dir(&current_dir) {
+        Ok(entries) => {
+            println!("Current dir {:?} contain files: ", current_dir.display());
+            for entry in entries {
+                match entry {
+                    Ok(entry) => println!("{:?}", entry.file_name()),
+                    Err(e) => eprintln!("Error: {}", e),
+                }
+            }
+        }
+        Err(e) => eprintln!("Error: {}", e),
+    }
+    Ok(())
 }
 
 fn find_note(note_name: String) -> bool {
@@ -92,13 +103,13 @@ fn find_note(note_name: String) -> bool {
 
 fn create_new_note() {
     println!("Enter note name: ");
-    let mut note_name = read_input();
+    let note_name = read_input();
     if find_note(note_name.clone()) {
         println!("Note is exist. Just update it.");
     } else {
         let mut file = File::create(&note_name).expect("Failed to create file.");
         println!("Enter what you want write to note: ");
-        let mut note_string = read_input();
+        let note_string = read_input();
         file.write_all(note_string.as_ref()).expect("Error while write to file.");
     }
 }
