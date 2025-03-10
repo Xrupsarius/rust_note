@@ -19,7 +19,7 @@ fn main() {
     loop {
         main_menu();
         println!("Enter number: ");
-        let mut menu_number = read_input();
+        let menu_number = read_input();
         let menu_num: i8 = menu_number.trim().parse().expect("This is not a number");
         select_menu_num(menu_num);
     }
@@ -67,7 +67,23 @@ fn update_note() {
         file.write_all(new_lines.as_bytes()).unwrap();
         println!("Write new lines successfully.");
     } else {
-        println!("Note is not find. Is it exists?");
+        println!("Note {note_name} does not exist.");
+        loop {
+            println!("Do you want to create a new note? (Y|N)");
+            let choice = read_input().to_uppercase();
+
+            match choice.as_str() {
+                "Y" => {
+                    File::create(note_name.clone()).unwrap();
+                    break;
+                }
+                "N" => {
+                    println!("Option cancelled");
+                    return;
+                }
+                _ => println!("Invalid option. Please enter Y or N"),
+            }
+        }
     }
 }
 
