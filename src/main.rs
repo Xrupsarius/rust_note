@@ -1,4 +1,5 @@
 mod conn_configuration;
+mod tui;
 
 use conn_configuration as sql;
 use std::{env, fs, io};
@@ -6,24 +7,150 @@ use std::fs::{File, OpenOptions};
 use std::io::{Write};
 use std::path::Path;
 use std::process::exit;
+use color_eyre::{
+    eyre::{bail, WrapErr},
+    Result
+};
+use ratatui::{
+    buffer::Buffer,
+    crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind},
+    layout::Rect,
+    style::Stylize,
+    symbols::border,
+    text::{Line, Text},
+    widgets::{Block, Paragraph, Widget, Borders},
+    Frame,
+};
 
 static FAILED_TO_READ_LINE: &'static str = "Failed to read line.";
 
-fn main() {
-    println!("This is note example app.");
-    println!("Input your name: ");
-    let input = read_input();
-    sql::sqlite_utils::create_database(input.clone());
-    println!("Hello, {input}");
+fn main() -> Result<()> {
+    color_eyre::install()?;
+    let mut terminal = tui::init()?;
+    let result = App::default().run(&mut terminal);
+    if let Err(err) = tui::restore() {
+        eprintln!(
+            "Failed to restore terminal. Run 'reset' or restart your terminal to recover: {}",
+            err
+        );
+    }
+    result
+}
 
-    loop {
-        main_menu();
-        println!("Enter number: ");
-        let menu_number = read_input();
-        let menu_num: i8 = menu_number.trim().parse().expect("This is not a number");
-        select_menu_num(menu_num);
+#[derive(Debug, Default)]
+pub struct App {
+    counter: u8,
+    exit: bool,
+}
+
+impl App {
+
+    pub fn run(&mut self, terminal: &mut tui::Tui) -> Result<()> {
+        while !self.exit {
+            terminal.draw(|frame| self.render_frame(frame))?;
+            self.handle_events().wrap_err("handle events failed")?;
+        }
+        Ok(())
+    }
+
+    fn render_frame(&self, frame: &mut Frame) {
+        frame.render_widget(self, frame.area());
+    }
+
+    fn draw(&self, frame: &mut Frame) {
+        frame.render_widget(self, frame.area());
+    }
+
+    fn handle_events(&mut self) -> Result<()> {
+        match event::read()? {
+            Event::Key(key_event) if key_event.kind == KeyEventKind::Press => self
+                .handle_key_event(key_event)
+                .wrap_err_with(|| format!("key event failed:\n {key_event:#?}")),
+            _ => Ok(()),
+        }
+    }
+
+    fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()> {
+        match key_event.code {
+            KeyCode::Char('q') => self.exit(),
+            KeyCode::Left => self.decrement_counter()?,
+            KeyCode::Right => self.increment_counter()?,
+            _ => {}
+        }
+        Ok(())
+    }
+
+    fn exit(&mut self) {
+        self.exit = true;
+    }
+
+    fn increment_counter(&mut self) -> Result<()> {
+        self.counter += 1;
+        Ok(())
+    }
+
+    fn decrement_counter(&mut self) -> Result<()> {
+        self.counter -= 1;
+        Ok(())
     }
 }
+
+impl Widget for &App {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        let title = Line::from(" Counter App Tutorial ".bold());
+        let instructions = Line::from(vec![
+            " Decrement ".into(),
+            " <Left>".blue().bold(),
+            " Increment ".into(),
+            " <Right>".blue().bold(),
+            " Quit ".into(),
+            " <Q> ".blue().bold(),
+        ]);
+        let block = Block::bordered()
+            .title(title.centered())
+            .title_bottom(instructions.centered())
+            .border_set(border::THICK);
+
+        let counter_text = Text::from(vec![Line::from(vec![
+            "Value: ".into(),
+            self.counter.to_string().yellow(),
+        ])]);
+
+        Paragraph::new(counter_text)
+            .centered()
+            .block(block)
+            .render(area, buf);
+    }
+}
+
+// fn run(mut terminal: DefaultTerminal) -> Result<()> {
+//     loop {
+//         terminal.draw(render)?;
+//         if matches!(event::read()?, Event::Key(_)) {
+//             break Ok(());
+//         }
+//     }
+// }
+
+fn render(frame: &mut Frame) {
+    frame.render_widget("hello world", frame.area());
+}
+
+// fn main() {
+//     println!("This is note example app.");
+//     println!("Input your name: ");
+//     let input = read_input();
+//     sql::sqlite_utils::create_database(input.clone());
+//     println!("Hello, {input}");
+//
+//     loop {
+//         main_menu();
+//         println!("Enter number: ");
+//         let menu_number = read_input();
+//         let menu_num: i8 = menu_number.trim().parse().expect("This is not a number");
+//         select_menu_num(menu_num);
+//     }
+// }
 
 fn read_input() -> String {
     let mut text = String::new();
